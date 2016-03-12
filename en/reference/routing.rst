@@ -7,14 +7,14 @@ mode and match-only mode. The first mode is ideal for working with MVC applicati
 
 Defining Routes
 ---------------
-:doc:`Phalcon\\Mvc\\Router <../api/Phalcon_Mvc_Router>` provides advanced routing capabilities. In MVC mode,
+:doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` provides advanced routing capabilities. In MVC mode,
 you can define routes and map them to controllers/actions that you require. A route is defined as follows:
 
 .. code-block:: php
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // Create the router
     $router = new Router();
@@ -42,7 +42,7 @@ you can define routes and map them to controllers/actions that you require. A ro
 The first parameter of the :code:`add()` method is the pattern you want to match and, optionally, the second parameter is a set of paths.
 In this case, if the URI is /admin/users/my-profile, then the "users" controller with its action "profile"
 will be executed. It's important to remember that the router does not execute the controller and action, it only collects this
-information to inform the correct component (ie. :doc:`Phalcon\\Mvc\\Dispatcher <../api/Phalcon_Mvc_Dispatcher>`)
+information to inform the correct component (ie. :doc:`ManaPHP\\Mvc\\Dispatcher <../api/ManaPHP_Mvc_Dispatcher>`)
 that this is the controller/action it should execute.
 
 An application can have many paths and defining routes one by one can be a cumbersome task. In these cases we can
@@ -52,7 +52,7 @@ create more flexible routes:
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // Create the router
     $router = new Router();
@@ -113,7 +113,7 @@ is uppercased. For instance, some_controller is converted to SomeController.
 
 Since you can add many routes as you need using the :code:`add()` method, the order in which routes are added indicate
 their relevance, latest routes added have more relevance than first added. Internally, all defined routes
-are traversed in reverse order until :doc:`Phalcon\\Mvc\\Router <../api/Phalcon_Mvc_Router>` finds the
+are traversed in reverse order until :doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` finds the
 one that matches the given URI and processes it, while ignoring the rest.
 
 Parameters with Names
@@ -144,7 +144,7 @@ by the request. Inside the controller, those named parameters can be accessed as
 
     <?php
 
-    use Phalcon\Mvc\Controller;
+    use ManaPHP\Mvc\Controller;
 
     class PostsController extends Controller
     {
@@ -190,7 +190,7 @@ You can access their values in the same way as before:
 
     <?php
 
-    use Phalcon\Mvc\Controller;
+    use ManaPHP\Mvc\Controller;
 
     class DocumentationController extends Controller
     {
@@ -256,7 +256,7 @@ It's possible define a default route that includes a module wildcard:
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     $router = new Router(false);
 
@@ -400,8 +400,8 @@ If a set of routes have common paths they can be grouped to easily maintain them
 
     <?php
 
-    use Phalcon\Mvc\Router;
-    use Phalcon\Mvc\Router\Group as RouterGroup;
+    use ManaPHP\Mvc\Router;
+    use ManaPHP\Mvc\Router\Group as RouterGroup;
 
     $router = new Router();
 
@@ -450,7 +450,7 @@ You can move groups of routes to separate files in order to improve the organiza
 
     <?php
 
-    use Phalcon\Mvc\Router\Group as RouterGroup;
+    use ManaPHP\Mvc\Router\Group as RouterGroup;
 
     class BlogRoutes extends RouterGroup
     {
@@ -507,7 +507,7 @@ Matching Routes
 ---------------
 A valid URI must be passed to the Router so that it can process it and find a matching route.
 By default, the routing URI is taken from the :code:`$_GET['_url']` variable that is created by the rewrite engine
-module. A couple of rewrite rules that work very well with Phalcon are:
+module. A couple of rewrite rules that work very well with ManaPHP are:
 
 .. code-block:: apacheconf
 
@@ -524,7 +524,7 @@ The following example shows how to use this component in stand-alone mode:
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // Creating a router
     $router = new Router();
@@ -549,7 +549,7 @@ The following example shows how to use this component in stand-alone mode:
 
 Naming Routes
 -------------
-Each route that is added to the router is stored internally as a :doc:`Phalcon\\Mvc\\Router\\Route <../api/Phalcon_Mvc_Router_Route>` object.
+Each route that is added to the router is stored internally as a :doc:`ManaPHP\\Mvc\\Router\\Route <../api/ManaPHP_Mvc_Router_Route>` object.
 That class encapsulates all the details of each route. For instance, we can give a name to a path to identify it uniquely in our application.
 This is especially useful if you want to create URLs from it.
 
@@ -565,18 +565,18 @@ This is especially useful if you want to create URLs from it.
 
     $router->add("/posts/{year}/{title}", "Posts::show")->setName("show-posts");
 
-Then, using for example the component :doc:`Phalcon\\Mvc\\Url <../api/Phalcon_Mvc_Url>` we can build routes from its name:
+Then, using for example the component :doc:`ManaPHP\\Mvc\\Url <../api/ManaPHP_Mvc_Url>` we can build routes from its name:
 
 .. code-block:: php
 
     <?php
 
-    // Returns /posts/2012/phalcon-1-0-released
+    // Returns /posts/2012/ManaPHP-1-0-released
     echo $url->get(
         array(
             "for"   => "show-posts",
             "year"  => "2012",
-            "title" => "phalcon-1-0-released"
+            "title" => "ManaPHP-1-0-released"
         )
     );
 
@@ -674,10 +674,10 @@ The following are examples of custom routes:
 
 Default Behavior
 ----------------
-:doc:`Phalcon\\Mvc\\Router <../api/Phalcon_Mvc_Router>` has a default behavior that provides a very simple routing that
+:doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` has a default behavior that provides a very simple routing that
 always expects a URI that matches the following pattern: /:controller/:action/:params
 
-For example, for a URL like this *http://phalconphp.com/documentation/show/about.html*, this router will translate it as follows:
+For example, for a URL like this *http://ManaPHPphp.com/documentation/show/about.html*, this router will translate it as follows:
 
 +------------+---------------+
 | Controller | documentation |
@@ -693,7 +693,7 @@ If you don't want the router to have this behavior, you must create the router p
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // Create the router without default routes
     $router = new Router(false);
@@ -766,7 +766,7 @@ You can set up the router to automatically remove the slashes from the end of ha
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     $router = new Router();
 
@@ -868,7 +868,7 @@ In groups of routes you can set up a hostname constraint that apply for every ro
 
     <?php
 
-    use Phalcon\Mvc\Router\Group as RouterGroup;
+    use ManaPHP\Mvc\Router\Group as RouterGroup;
 
     // Create a group with a common module and controller
     $blog = new RouterGroup(
@@ -914,13 +914,13 @@ In groups of routes you can set up a hostname constraint that apply for every ro
 URI Sources
 -----------
 By default the URI information is obtained from the :code:`$_GET['_url']` variable, this is passed by the Rewrite-Engine to
-Phalcon, you can also use :code:`$_SERVER['REQUEST_URI']` if required:
+ManaPHP, you can also use :code:`$_SERVER['REQUEST_URI']` if required:
 
 .. code-block:: php
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // ...
 
@@ -943,7 +943,7 @@ Since this component has no dependencies, you can create a file as shown below t
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     // These routes simulate real URIs
     $testRoutes = array(
@@ -982,9 +982,9 @@ Since this component has no dependencies, you can create a file as shown below t
 
 Registering Router instance
 ---------------------------
-You can register router during service registration with Phalcon dependency injector to make it available inside the controllers.
+You can register router during service registration with ManaPHP dependency injector to make it available inside the controllers.
 
-You need to add code below in your bootstrap file (for example index.php or app/config/services.php if you use `Phalcon Developer Tools <http://phalconphp.com/en/download/tools>`_)
+You need to add code below in your bootstrap file (for example index.php or app/config/services.php if you use `ManaPHP Developer Tools <http://ManaPHPphp.com/en/download/tools>`_)
 
 .. code-block:: php
 
@@ -1008,7 +1008,7 @@ You need to create app/config/routes.php and add router initialization code, for
 
     <?php
 
-    use Phalcon\Mvc\Router;
+    use ManaPHP\Mvc\Router;
 
     $router = new Router();
 
@@ -1032,7 +1032,7 @@ You need to create app/config/routes.php and add router initialization code, for
 
 Implementing your own Router
 ----------------------------
-The :doc:`Phalcon\\Mvc\\RouterInterface <../api/Phalcon_Mvc_RouterInterface>` interface must be implemented to create your own router replacing
-the one provided by Phalcon.
+The :doc:`ManaPHP\\Mvc\\RouterInterface <../api/ManaPHP_Mvc_RouterInterface>` interface must be implemented to create your own router replacing
+the one provided by ManaPHP.
 
 .. _PCRE regular expressions: http://www.php.net/manual/en/book.pcre.php
