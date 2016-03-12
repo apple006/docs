@@ -8,34 +8,30 @@ mode and match-only mode. The first mode is ideal for working with MVC applicati
 Defining Routes
 ---------------
 :doc:`ManaPHP\\Mvc\\Router` provides advanced routing capabilities. In MVC mode,
-you can define routes and map them to controllers/actions that you require. A route is defined as follows:
+you can define routes and map them to /modules/controllers/actions that you require. A route is defined as follows:
 
 .. code-block:: php
 
     <?php
+    
+    //Create a route group, which contains some routes
+    $group = new \ManaPHP\Mvc\Router\Group();
 
-    use ManaPHP\Mvc\Router;
+    //Add a route to the group
+    $group->add("/admin/users/my-profile", array(
+        "controller" => "users",
+        "action" => "profile"
+      ));
 
-    // Create the router
-    $router = new Router();
+    //Add another route to the group
+    $group->add("/admin/users/change-password", array(
+        "controller" => "users",
+        "action" => "changePassword"
+      ));
 
-    // Define a route
-    $router->add(
-        "/admin/users/my-profile",
-        array(
-            "controller" => "users",
-            "action"     => "profile"
-        )
-    );
-
-    // Another route
-    $router->add(
-        "/admin/users/change-password",
-        array(
-            "controller" => "users",
-            "action"     => "changePassword"
-        )
-    );
+    //Create the router
+    $router = new \ManaPHP\Mvc\Router();
+    $router->mount($group);
 
     $router->handle();
 
