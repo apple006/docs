@@ -7,7 +7,7 @@ mode and match-only mode. The first mode is ideal for working with MVC applicati
 
 Defining Routes
 ---------------
-:doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` provides advanced routing capabilities. In MVC mode,
+:doc:`ManaPHP\\Mvc\\Router>` provides advanced routing capabilities. In MVC mode,
 you can define routes and map them to controllers/actions that you require. A route is defined as follows:
 
 .. code-block:: php
@@ -42,7 +42,7 @@ you can define routes and map them to controllers/actions that you require. A ro
 The first parameter of the :code:`add()` method is the pattern you want to match and, optionally, the second parameter is a set of paths.
 In this case, if the URI is /admin/users/my-profile, then the "users" controller with its action "profile"
 will be executed. It's important to remember that the router does not execute the controller and action, it only collects this
-information to inform the correct component (ie. :doc:`ManaPHP\\Mvc\\Dispatcher <../api/ManaPHP_Mvc_Dispatcher>`)
+information to inform the correct component (ie. :doc:`ManaPHP\\Mvc\\Dispatcher>`)
 that this is the controller/action it should execute.
 
 An application can have many paths and defining routes one by one can be a cumbersome task. In these cases we can
@@ -113,7 +113,7 @@ is uppercased. For instance, some_controller is converted to SomeController.
 
 Since you can add many routes as you need using the :code:`add()` method, the order in which routes are added indicate
 their relevance, latest routes added have more relevance than first added. Internally, all defined routes
-are traversed in reverse order until :doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` finds the
+are traversed in reverse order until :doc:`ManaPHP\\Mvc\\Router>` finds the
 one that matches the given URI and processes it, while ignoring the rest.
 
 Parameters with Names
@@ -549,7 +549,7 @@ The following example shows how to use this component in stand-alone mode:
 
 Naming Routes
 -------------
-Each route that is added to the router is stored internally as a :doc:`ManaPHP\\Mvc\\Router\\Route <../api/ManaPHP_Mvc_Router_Route>` object.
+Each route that is added to the router is stored internally as a :doc:`ManaPHP\\Mvc\\Router\\Route>` object.
 That class encapsulates all the details of each route. For instance, we can give a name to a path to identify it uniquely in our application.
 This is especially useful if you want to create URLs from it.
 
@@ -565,7 +565,7 @@ This is especially useful if you want to create URLs from it.
 
     $router->add("/posts/{year}/{title}", "Posts::show")->setName("show-posts");
 
-Then, using for example the component :doc:`ManaPHP\\Mvc\\Url <../api/ManaPHP_Mvc_Url>` we can build routes from its name:
+Then, using for example the component :doc:`ManaPHP\\Mvc\\Url>` we can build routes from its name:
 
 .. code-block:: php
 
@@ -674,7 +674,7 @@ The following are examples of custom routes:
 
 Default Behavior
 ----------------
-:doc:`ManaPHP\\Mvc\\Router <../api/ManaPHP_Mvc_Router>` has a default behavior that provides a very simple routing that
+:doc:`ManaPHP\\Mvc\\Router>` has a default behavior that provides a very simple routing that
 always expects a URI that matches the following pattern: /:controller/:action/:params
 
 For example, for a URL like this *http://ManaPHPphp.com/documentation/show/about.html*, this router will translate it as follows:
@@ -984,7 +984,7 @@ Registering Router instance
 ---------------------------
 You can register router during service registration with ManaPHP dependency injector to make it available inside the controllers.
 
-You need to add code below in your bootstrap file (for example index.php or app/config/services.php if you use `ManaPHP Developer Tools <http://ManaPHPphp.com/en/download/tools>`_)
+You need to add code below in your bootstrap file (for example index.php or app/config/services.php if you use `ManaPHP Developer Tools>`_)
 
 .. code-block:: php
 
@@ -1032,7 +1032,7 @@ You need to create app/config/routes.php and add router initialization code, for
 
 Implementing your own Router
 ----------------------------
-The :doc:`ManaPHP\\Mvc\\RouterInterface <../api/ManaPHP_Mvc_RouterInterface>` interface must be implemented to create your own router replacing
+The :doc:`ManaPHP\\Mvc\\RouterInterface>` interface must be implemented to create your own router replacing
 the one provided by ManaPHP.
 
 .. _PCRE regular expressions: http://www.php.net/manual/en/book.pcre.php
