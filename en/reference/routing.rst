@@ -14,23 +14,22 @@ you can define routes and map them to /modules/controllers/actions that you requ
 
     <?php
     
-    //Create a route group, which contains some routes
+    // Create a route group, which can contains some routes
     $group = new \ManaPHP\Mvc\Router\Group();
 
-    //Add a route to the group
+    // Add a route to the group
     $group->add("/admin/users/my-profile", array(
         "controller" => "users",
         "action" => "profile"
       ));
 
-    //Add another route to the group
-    $group->add("/admin/users/change-password", array(
-        "controller" => "users",
-        "action" => "changePassword"
-      ));
+    // Add another route to the group
+    $group->add("/admin/users/change-password", "users::changePassword");
 
-    //Create the router
+    // Create the router
     $router = new \ManaPHP\Mvc\Router();
+
+    // Mount a group to the route for default module
     $router->mount($group);
 
     $router->handle();
@@ -48,20 +47,21 @@ create more flexible routes:
 
     <?php
 
-    use ManaPHP\Mvc\Router;
+    // Create a route group, which can contains some routes
+    $group = new \ManaPHP\Mvc\Router\Group();
 
     // Create the router
-    $router = new Router();
+    $router = new \ManaPHP\Mvc\Router();
+
+    // Mount a group to the route for default module
+    $router->mount($group);
 
     // Define a route
-    $router->add(
-        "/admin/:controller/a/:action/:params",
-        array(
-            "controller" => 1,
-            "action"     => 2,
-            "params"     => 3
-        )
-    );
+    $group->add("/admin/:controller/a/:action/:params", array(
+        "controller" => 1,
+        "action" => 2,
+        "params" => 3
+      ));
 
 In the example above, we're using wildcards to make a route valid for many URIs. For example, by accessing the
 following URL (/admin/users/a/delete/dave/301) would produce:
@@ -77,13 +77,13 @@ following URL (/admin/users/a/delete/dave/301) would produce:
 +------------+---------------+
 
 The :code:`add()` method receives a pattern that can optionally have predefined placeholders and regular expression
-modifiers. All the routing patterns must start with a forward slash character (/). The regular expression syntax used
+modifiers. **All the routing patterns must start with a forward slash character (/)**. The regular expression syntax used
 is the same as the `PCRE regular expressions`_. Note that, it is not necessary to add regular expression
-delimiters. All route patterns are case-insensitive.
+delimiters. **All route patterns are case-insensitive**.
 
-The second parameter defines how the matched parts should bind to the controller/action/parameters. Matching
-parts are placeholders or subpatterns delimited by parentheses (round brackets). In the example given above, the
-first subpattern matched (:code:`:controller`) is the controller part of the route, the second the action and so on.
+The second parameter defines how the matched parts should bind to the module/controller/action/parameters. Matching
+parts are placeholders or sub-patterns delimited by parentheses (round brackets). In the example given above, the
+first sub-pattern matched (:code:`:controller`) is the controller part of the route, the second the action and so on.
 
 These placeholders help writing regular expressions that are more readable for developers and easier
 to understand. The following placeholders are supported:
@@ -91,21 +91,19 @@ to understand. The following placeholders are supported:
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
 | Placeholder          | Regular Expression          | Usage                                                                                                  |
 +======================+=============================+========================================================================================================+
-| :code:`/:module`     | :code:`/([a-zA-Z0-9\_\-]+)` | Matches a valid module name with alpha-numeric characters only                                         |
+| :code:`/:module`     | :code:`/([a-z0-9_-]+)`      | Matches a valid module name with alpha-numeric characters only                                         |
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
-| :code:`/:controller` | :code:`/([a-zA-Z0-9\_\-]+)` | Matches a valid controller name with alpha-numeric characters only                                     |
+| :code:`/:controller` | :code:`/([a-z0-9_-]+)`      | Matches a valid controller name with alpha-numeric characters only                                     |
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
-| :code:`/:action`     | :code:`/([a-zA-Z0-9\_]+)`   | Matches a valid action name with alpha-numeric characters only                                         |
+| :code:`/:action`     | :code:`/([a-z0-9_-]+)`      | Matches a valid action name with alpha-numeric characters only                                         |
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
 | :code:`/:params`     | :code:`(/.*)*`              | Matches a list of optional words separated by slashes. Only use this placeholder at the end of a route |
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
-| :code:`/:namespace`  | :code:`/([a-zA-Z0-9\_\-]+)` | Matches a single level namespace name                                                                  |
-+----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
 | :code:`/:int`        | :code:`/([0-9]+)`           | Matches an integer parameter                                                                           |
 +----------------------+-----------------------------+--------------------------------------------------------------------------------------------------------+
-
+    
 Controller names are camelized, this means that characters (:code:`-`) and (:code:`_`) are removed and the next character
-is uppercased. For instance, some_controller is converted to SomeController.
+is uppercased. For instance, blog_comment is converted to BlogComment.
 
 Since you can add many routes as you need using the :code:`add()` method, the order in which routes are added indicate
 their relevance, latest routes added have more relevance than first added. Internally, all defined routes
@@ -120,15 +118,11 @@ The example below demonstrates how to define names to route parameters:
 
     <?php
 
-    $router->add(
-        "/news/([0-9]{4})/([0-9]{2})/([0-9]{2})/:params",
+    $group->add(
+        "/news/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/:params",
         array(
             "controller" => "posts",
             "action"     => "show",
-            "year"       => 1, // ([0-9]{4})
-            "month"      => 2, // ([0-9]{2})
-            "day"        => 3, // ([0-9]{2})
-            "params"     => 4  // :params
         )
     );
 
@@ -140,9 +134,7 @@ by the request. Inside the controller, those named parameters can be accessed as
 
     <?php
 
-    use ManaPHP\Mvc\Controller;
-
-    class PostsController extends Controller
+    class PostsController extends ManaPHP\Mvc\Controller
     {
         public function indexAction()
         {
@@ -166,13 +158,13 @@ by the request. Inside the controller, those named parameters can be accessed as
 
 Note that the values of the parameters are obtained from the dispatcher. This happens because it is the
 component that finally interacts with the drivers of your application. Moreover, there is also another
-way to create named parameters as part of the pattern:
+example to create named parameters as part of the pattern:
 
 .. code-block:: php
 
     <?php
 
-    $router->add(
+    $group->add(
         "/documentation/{chapter}/{name}.{type:[a-z]+}",
         array(
             "controller" => "documentation",
@@ -212,18 +204,29 @@ The following examples produce the same result:
     <?php
 
     // Short form
-    $router->add("/posts/{year:[0-9]+}/{title:[a-z\-]+}", "Posts::show");
+    $group->add("/posts/{year:[0-9]+}/{title:[a-z\-]+}", "Posts::show");
 
     // Array form
-    $router->add(
-        "/posts/([0-9]+)/([a-z\-]+)",
+    $group->add(
+        "/posts/{year:[0-9]+}/{title:[a-z\-]+}",
         array(
            "controller" => "posts",
            "action"     => "show",
-           "year"       => 1,
-           "title"      => 2
         )
     );
+
+The following short syntax are supported:
+
++----------------------------+-------------------+
+| pattern                    | sample            |
++============================+===================+
+| module::controller::action | admin::user::list |
++----------------------------+-------------------+
+| controller::action         | user::list        |
++----------------------------+-------------------+
+| controller                 | user::index       |
++----------------------------+-------------------+
+
 
 Mixing Array and Short Syntax
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -236,9 +239,9 @@ are added to the route paths according to the position on which they were define
 
     // First position must be skipped because it is used for
     // the named parameter 'country'
-    $router->add('/news/{country:[a-z]{2}}/([a-z+])/([a-z\-+])',
+    $group->add('/news/{country:[a-z]{2}}/([a-z+])/([a-z\-+])',
         array(
-            'section' => 2, // Positions start with 2
+            'section' => 2, // Positions start with 2, because 'country' occupies a position
             'article' => 3
         )
     );
@@ -252,11 +255,9 @@ It's possible define a default route that includes a module wildcard:
 
     <?php
 
-    use ManaPHP\Mvc\Router;
+    $group =new \ManaPHP\Mvc\Router\Group();
 
-    $router = new Router(false);
-
-    $router->add(
+    $group->add(
         '/:module/:controller/:action/:params',
         array(
             'module'     => 1,
@@ -285,7 +286,7 @@ Or you can bind specific routes to specific modules:
 
     <?php
 
-    $router->add(
+    $group->add(
         "/login",
         array(
             'module'     => 'backend',
@@ -294,42 +295,12 @@ Or you can bind specific routes to specific modules:
         )
     );
 
-    $router->add(
+    $group->add(
         "/products/:action",
         array(
             'module'     => 'frontend',
             'controller' => 'products',
             'action'     => 1
-        )
-    );
-
-Or bind them to specific namespaces:
-
-.. code-block:: php
-
-    <?php
-
-    $router->add(
-        "/:namespace/login",
-        array(
-            'namespace'  => 1,
-            'controller' => 'login',
-            'action'     => 'index'
-        )
-    );
-
-Namespaces/class names must be passed separated:
-
-.. code-block:: php
-
-    <?php
-
-    $router->add(
-        "/login",
-        array(
-            'namespace'  => 'Backend\Controllers',
-            'controller' => 'login',
-            'action'     => 'index'
         )
     );
 
@@ -343,102 +314,46 @@ this is especially useful when creating RESTful applications:
     <?php
 
     // This route only will be matched if the HTTP method is GET
-    $router->addGet("/products/edit/{id}", "Products::edit");
+    $group->addGet("/products/edit/{id}", "Products::edit");
 
     // This route only will be matched if the HTTP method is POST
-    $router->addPost("/products/save", "Products::save");
+    $group->addPost("/products/save", "ProductsController::saveAction");
 
     // This route will be matched if the HTTP method is POST or PUT
-    $router->add("/products/update", "Products::update")->via(array("POST", "PUT"));
+    $group->add("/products/update", "Products::update",["POST", "PUT"]);
 
-Using conversors
+Groups of Router
 ^^^^^^^^^^^^^^^^
-Conversors allow you to freely transform the route's parameters before passing them to the dispatcher.
-The following examples show how to use them:
+The router is composed of routes group. After adding routes to the group, if you want the group to become effective,
+you need mount which to the router.
+
+you can mount the routes group to domain only, path only or domain and path.
+
+$group->mount($group,'blog','blog.manaphp.com'); means mount the blog module to blog.manaphp.com
+$group->mount($group,'blog') or $group->mount($group,'blog','/blog'); means mount the blog module to /blog path.
+$group->mount($group,'blog,'www.manaphp.com/blog'); means mount the blog module to www.manaphp.com/blog.
 
 .. code-block:: php
 
     <?php
 
-    // The action name allows dashes, an action can be: /products/new-ipod-nano-4-generation
-    $router
-        ->add('/products/{slug:[a-z\-]+}', array(
-            'controller' => 'products',
-            'action'     => 'show'
-        ))
-        ->convert('slug', function ($slug) {
-            // Transform the slug removing the dashes
-            return str_replace('-', '', $slug);
-        });
+    $router = new \ManaPHP\Mvc\Router();
 
-Another use case for conversors is binding a model into a route. This allows the model to be passed into the defined action directly:
+    $blog = new \ManaPHP\Mvc\Router\Group();
 
-.. code-block:: php
-
-    <?php
-
-    // This example works off the assumption that the ID is being used as parameter in the url: /products/4
-    $router
-        ->add('/products/{id}', array(
-            'controller' => 'products',
-            'action'     => 'show'
-        ))
-        ->convert('id', function ($id) {
-            // Fetch the model
-            return Product::findFirstById($id);
-        });
-
-Groups of Routes
-^^^^^^^^^^^^^^^^
-If a set of routes have common paths they can be grouped to easily maintain them:
-
-.. code-block:: php
-
-    <?php
-
-    use ManaPHP\Mvc\Router;
-    use ManaPHP\Mvc\Router\Group as RouterGroup;
-
-    $router = new Router();
-
-    // Create a group with a common module and controller
-    $blog = new RouterGroup(
-        array(
-            'module'     => 'blog',
-            'controller' => 'index'
-        )
+    // Add a route to the group: controller='blog',action='save'
+    $blog->add('/save','blog::save')
     );
 
-    // All the routes start with /blog
-    $blog->setPrefix('/blog');
-
-    // Add a route to the group
-    $blog->add(
-        '/save',
-        array(
-            'action' => 'save'
-        )
+    // Add another route to the group: controller='blog',action='edit'
+    $blog->add('/edit/{id}','blog::edit'
     );
 
-    // Add another route to the group
-    $blog->add(
-        '/edit/{id}',
-        array(
-            'action' => 'edit'
-        )
-    );
+    // Add another route with short path: controller='blog',action='index'
+    $blog->add('/blog','blog');
 
-    // This route maps to a controller different than the default
-    $blog->add(
-        '/blog',
-        array(
-            'controller' => 'blog',
-            'action'     => 'index'
-        )
-    );
-
-    // Add the group to the router
-    $router->mount($blog);
+    // Add the group which bind to blog module to the router
+    $router->mount($blog,'blog');
 
 You can move groups of routes to separate files in order to improve the organization and code reusing in the application:
 
@@ -446,47 +361,24 @@ You can move groups of routes to separate files in order to improve the organiza
 
     <?php
 
-    use ManaPHP\Mvc\Router\Group as RouterGroup;
-
-    class BlogRoutes extends RouterGroup
+    class BlogRoutes extends ManaPHP\Mvc\Router\Group
     {
         public function initialize()
         {
-            // Default paths
-            $this->setPaths(
-                array(
-                    'module'    => 'blog',
-                    'namespace' => 'Blog\Controllers'
-                )
+            $blog = new ManaPHP\Mvc\Router\Group();
+
+            // Add a route to the group: controller='blog',action='save'
+            $blog->add('/save','blog::save')
             );
 
-            // All the routes start with /blog
-            $this->setPrefix('/blog');
-
-            // Add a route to the group
-            $this->add(
-                '/save',
-                array(
-                    'action' => 'save'
-                )
+            // Add another route to the group: controller='blog',action='edit'
+            $blog->add('/edit/{id}','blog::edit'
             );
 
-            // Add another route to the group
-            $this->add(
-                '/edit/{id}',
-                array(
-                    'action' => 'edit'
-                )
-            );
+            // Add another route with short path: controller='blog',action='index'
+            $blog->add('/blog','blog');
 
-            // This route maps to a controller different than the default
-            $this->add(
-                '/blog',
-                array(
-                    'controller' => 'blog',
-                    'action'     => 'index'
-                )
-            );
+            return $blog;
         }
     }
 
@@ -497,7 +389,7 @@ Then mount the group in the router:
     <?php
 
     // Add the group to the router
-    $router->mount(new BlogRoutes());
+    $router->mount(new BlogRoutes(),'blog');
 
 Matching Routes
 ---------------
@@ -520,13 +412,13 @@ The following example shows how to use this component in stand-alone mode:
 
     <?php
 
-    use ManaPHP\Mvc\Router;
-
     // Creating a router
-    $router = new Router();
+    $router = new \ManaPHP\Mvc\Router();
 
-    // Define routes here if any
+    $group =new \ManaPHP\Mvc\Router\Group();
+    // Define routes group here if any
     // ...
+    $router->mount($group);
 
     // Taking URI from $_GET["_url"]
     $router->handle();
@@ -539,9 +431,6 @@ The following example shows how to use this component in stand-alone mode:
 
     // Getting the processed action
     echo $router->getActionName();
-
-    // Get the matched route
-    $route = $router->getMatchedRoute();
 
 Naming Routes
 -------------
@@ -585,7 +474,7 @@ The following are examples of custom routes:
     <?php
 
     // Matches "/system/admin/a/edit/7001"
-    $router->add(
+    $group->add(
         "/system/:controller/a/:action/:params",
         array(
             "controller" => 1,
@@ -595,7 +484,7 @@ The following are examples of custom routes:
     );
 
     // Matches "/es/news"
-    $router->add(
+    $group->add(
         "/([a-z]{2})/:controller",
         array(
             "controller" => 2,
@@ -605,7 +494,7 @@ The following are examples of custom routes:
     );
 
     // Matches "/es/news"
-    $router->add(
+    $group->add(
         "/{language:[a-z]{2}}/:controller",
         array(
             "controller" => 2,
@@ -614,7 +503,7 @@ The following are examples of custom routes:
     );
 
     // Matches "/admin/posts/edit/100"
-    $router->add(
+    $group->add(
         "/admin/:controller/:action/:int",
         array(
             "controller" => 1,
@@ -624,7 +513,7 @@ The following are examples of custom routes:
     );
 
     // Matches "/posts/2015/02/some-cool-content"
-    $router->add(
+    $group->add(
         "/posts/([0-9]{4})/([0-9]{2})/([a-z\-]+)",
         array(
             "controller" => "posts",
@@ -636,7 +525,7 @@ The following are examples of custom routes:
     );
 
     // Matches "/manual/en/translate.adapter.html"
-    $router->add(
+    $group->add(
         "/manual/([a-z]{2})/([a-z\.]+)\.html",
         array(
             "controller" => "manual",
@@ -647,13 +536,13 @@ The following are examples of custom routes:
     );
 
     // Matches /feed/fr/le-robots-hot-news.atom
-    $router->add(
+    $group->add(
         "/feed/{lang:[a-z]+}/{blog:[a-z\-]+}\.{type:[a-z\-]+}",
         "Feed::get"
     );
 
     // Matches /api/v1/users/peter.json
-    $router->add(
+    $group->add(
         '/api/(v1|v2)/{method:[a-z]+}/{param:[a-z]+}\.(json|xml)',
         array(
             'controller' => 'api',
@@ -666,14 +555,14 @@ The following are examples of custom routes:
 
     Beware of characters allowed in regular expression for controllers and namespaces. As these
     become class names and in turn they're passed through the file system could be used by attackers to
-    read unauthorized files. A safe regular expression is: :code:`/([a-zA-Z0-9\_\-]+)`
+    read unauthorized files. A safe regular expression is: :code:`/([a-z0-9_-]+)`
 
 Default Behavior
 ----------------
 :doc:`ManaPHP\\Mvc\\Router` has a default behavior that provides a very simple routing that
 always expects a URI that matches the following pattern: /:controller/:action/:params
 
-For example, for a URL like this *http://ManaPHPphp.com/documentation/show/about.html*, this router will translate it as follows:
+For example, for a URL like this *http://www.manaphp.com/documentation/show/about.html*, this router will translate it as follows:
 
 +------------+---------------+
 | Controller | documentation |
@@ -689,10 +578,8 @@ If you don't want the router to have this behavior, you must create the router p
 
     <?php
 
-    use ManaPHP\Mvc\Router;
-
     // Create the router without default routes
-    $router = new Router(false);
+    $router = new \ManaPHP\Mvc\Router(false);
 
 Setting the default route
 -------------------------
@@ -711,8 +598,8 @@ in your website/application:
         )
     );
 
-Not Found Paths
----------------
+Not Found Matched Route
+-----------------------
 If none of the routes specified in the router are matched, you can define a group of paths to be used in this scenario:
 
 .. code-block:: php
@@ -720,7 +607,7 @@ If none of the routes specified in the router are matched, you can define a grou
     <?php
 
     // Set 404 paths
-    $router->notFound(
+    $application->setNotFoundRoute(
         array(
             "controller" => "index",
             "action"     => "route404"
@@ -728,29 +615,6 @@ If none of the routes specified in the router are matched, you can define a grou
     );
 
 This is typically for an Error 404 page.
-
-Setting default paths
----------------------
-It's possible to define default values for the module, controller or action. When a route is missing any of
-those paths they can be automatically filled by the router:
-
-.. code-block:: php
-
-    <?php
-
-    // Setting a specific default
-    $router->setDefaultModule('backend');
-    $router->setDefaultNamespace('Backend\Controllers');
-    $router->setDefaultController('index');
-    $router->setDefaultAction('index');
-
-    // Using an array
-    $router->setDefaults(
-        array(
-            'controller' => 'index',
-            'action'     => 'index'
-        )
-    );
 
 Dealing with extra/trailing slashes
 -----------------------------------
@@ -762,9 +626,7 @@ You can set up the router to automatically remove the slashes from the end of ha
 
     <?php
 
-    use ManaPHP\Mvc\Router;
-
-    $router = new Router();
+    $router = new \ManaPHP\Mvc\Router();
 
     // Remove trailing slashes automatically
     $router->removeExtraSlashes(true);
@@ -776,60 +638,13 @@ Or, you can modify specific routes to optionally accept trailing slashes:
     <?php
 
     // The [/]{0,1} allows this route to have optionally have a trailing slash
-    $router->add(
+    $group->add(
         '/{language:[a-z]{2}}/:controller[/]{0,1}',
         array(
             'controller' => 2,
             'action'     => 'index'
         )
     );
-
-Match Callbacks
----------------
-Sometimes, routes should only be matched if they meet specific conditions.
-You can add arbitrary conditions to routes using the :code:`beforeMatch()` callback.
-If this function return :code:`false`, the route will be treated as non-matched:
-
-.. code-block:: php
-
-    <?php
-
-    $router->add('/login', array(
-        'module'     => 'admin',
-        'controller' => 'session'
-    ))->beforeMatch(function ($uri, $route) {
-        // Check if the request was made with Ajax
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
-            return false;
-        }
-        return true;
-    });
-
-You can re-use these extra conditions in classes:
-
-.. code-block:: php
-
-    <?php
-
-    class AjaxFilter
-    {
-        public function check()
-        {
-            return $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
-        }
-    }
-
-And use this class instead of the anonymous function:
-
-.. code-block:: php
-
-    <?php
-
-    $router->add('/get/info/{id}', array(
-        'controller' => 'products',
-        'action'     => 'info'
-    ))->beforeMatch(array(new AjaxFilter(), 'check'));
 
 Hostname Constraints
 --------------------
@@ -910,20 +725,7 @@ In groups of routes you can set up a hostname constraint that apply for every ro
 URI Sources
 -----------
 By default the URI information is obtained from the :code:`$_GET['_url']` variable, this is passed by the Rewrite-Engine to
-ManaPHP, you can also use :code:`$_SERVER['REQUEST_URI']` if required:
-
-.. code-block:: php
-
-    <?php
-
-    use ManaPHP\Mvc\Router;
-
-    // ...
-
-    $router->setUriSource(Router::URI_SOURCE_GET_URL); // Use $_GET['_url'] (default)
-    $router->setUriSource(Router::URI_SOURCE_SERVER_REQUEST_URI); // Use $_SERVER['REQUEST_URI']
-
-Or you can manually pass a URI to the :code:`handle()` method:
+ManaPHP, Or you can manually pass a URI to the :code:`handle()` method:
 
 .. code-block:: php
 
@@ -939,8 +741,6 @@ Since this component has no dependencies, you can create a file as shown below t
 
     <?php
 
-    use ManaPHP\Mvc\Router;
-
     // These routes simulate real URIs
     $testRoutes = array(
         '/',
@@ -952,7 +752,7 @@ Since this component has no dependencies, you can create a file as shown below t
         '/products/show/101',
     );
 
-    $router = new Router();
+    $router = new ManaPHP\Mvc\Router\Router();
 
     // Add here your custom routes
     // ...
@@ -970,7 +770,7 @@ Since this component has no dependencies, you can create a file as shown below t
             echo 'Controller: ', $router->getControllerName(), '<br>';
             echo 'Action: ', $router->getActionName(), '<br>';
         } else {
-            echo 'The route wasn\'t matched by any route<br>';
+            echo 'The route was not matched by any route<br>';
         }
 
         echo '<br>';
@@ -1004,11 +804,9 @@ You need to create app/config/routes.php and add router initialization code, for
 
     <?php
 
-    use ManaPHP\Mvc\Router;
+    $group =new \ManaPHP\Mvc\Router\Group();
 
-    $router = new Router();
-
-    $router->add(
+    $group->add(
         "/login",
         array(
             'controller' => 'login',
@@ -1016,7 +814,7 @@ You need to create app/config/routes.php and add router initialization code, for
         )
     );
 
-    $router->add(
+    $group->add(
         "/products/:action",
         array(
             'controller' => 'products',
@@ -1024,6 +822,8 @@ You need to create app/config/routes.php and add router initialization code, for
         )
     );
 
+    $group = new ManaPHP\Mvc\Router();
+    $router->mount($group);
     return $router;
 
 Implementing your own Router
